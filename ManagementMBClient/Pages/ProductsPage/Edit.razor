@@ -1,0 +1,55 @@
+﻿@page "/product/edit/{Id}"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Edit Product</PageTitle>
+
+<h3>Edit Product</h3>
+@if (product == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <form>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input id="name" class="form-control" @bind="@product.Name" required />
+        </div>
+        <div class="form-group">
+            <label for="quantity">Quantity:</label>
+            <input id="quantity" class="form-control" @bind="@product.Quantity" required />
+        </div>
+        <div class="form-group">
+            <label for="price">Price:</label>
+            <input id="price" class="form-control" @bind="@product.Price" required />
+        </div>
+        <div class="form-group">
+            <label for="costPrice">CostPrice:</label>
+            <input id="costPrice" class="form-control" @bind="@product.CostPrice" required />
+        </div>
+        <button type="button" class="btn btn-primary" @onclick="EditProduct">Edit Product</button>
+    </form>
+
+}
+
+@code {
+    [Parameter]
+    
+    public string Id { get; set; }
+
+    Product product;
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await _http.GetFromJsonAsync<Product>($"api/Products/GetById?id={Id}");
+    }
+
+    private async Task EditProduct()
+    {
+        var createProduct = await _http.PutAsJsonAsync<Product>($"api/Products/Update?id={Id}", product);
+           _navigationManager.NavigateTo("/product");
+    }
+}

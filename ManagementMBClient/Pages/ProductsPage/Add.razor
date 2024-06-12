@@ -1,0 +1,47 @@
+﻿@page "/product/add"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Add Product</PageTitle>
+
+ <form>
+    <div class="form-group">
+        <label for="name">Quantity:</label>
+        <input id="name" class="form-control" @bind="@product.Quantity" required />
+    </div>
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input id="name" class="form-control" @bind="@product.Name" required />
+    </div>
+    <div class="form-group">
+        <label for="email">Description:</label>
+        <input id="email" class="form-control" @bind="@product.Description" required />
+    </div>
+    <div class="form-group">
+        <label for="email">Price:</label>
+        <input id="email" class="form-control" @bind="@product.Price" required />
+    </div>
+    <div class="form-group">
+        <label for="email">CostPrice:</label>
+        <input id="email" class="form-control" @bind="@product.CostPrice" required />
+    </div>
+   
+    <button type="button" class="btn btn-primary" @onclick="AddProduct">Add Product</button>
+</form> 
+
+@code {
+    Product product = new Product();
+
+    private async Task AddProduct()
+    {
+        var createProduct = await _http.PostAsJsonAsync<Product>("api/Products", product);
+        if (createProduct.IsSuccessStatusCode)
+        {
+            product = new Product();
+            _navigationManager.NavigateTo("/product");
+        }
+
+    }
+}

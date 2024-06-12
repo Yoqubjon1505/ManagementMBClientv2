@@ -1,0 +1,84 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">ManagementMBClient</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="sale">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Продажа
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="purchase">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Покупка
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="balance">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Баланс
+            </NavLink>
+        </div>
+        <NavLink class="nav-link" href="/balance-by-date">
+            <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Создать баланс по дату
+        </NavLink>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="cashflow">
+                <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Кэш-флоу
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="financialIndicators">
+                <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Финансовые показатели
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="product">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Продукты
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="debtor">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Дебеторы
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="expenses">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Затраты
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="liabilities">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Обязательства
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="materialResources">
+                <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Материальные ресурсы
+            </NavLink>
+        </div>
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

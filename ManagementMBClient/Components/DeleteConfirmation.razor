@@ -1,0 +1,38 @@
+﻿@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnConfirm { get; set; }
+
+    private async Task Confirm(bool confirmed)
+    {
+        await OnConfirm.InvokeAsync(confirmed);
+    }
+
+    private string ModalDisplay => IsVisible ? "block" : "none";
+    private string ModalClass => IsVisible ? "show" : "";
+    private string BackgroundClass => IsVisible ? "modal-backdrop fade show" : "";
+}
+
+@if (IsVisible)
+{
+    <div class="modal fade @ModalClass" tabindex="-1" style="display:@ModalDisplay" aria-labelledby="deleteConfirmationLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationLabel">Подтверждение удаления</h5>
+                    <button type="button" class="btn-close" @onclick="() => Confirm(false)" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <p>"Вы уверены, что хотите удалить этот элемент?"</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => Confirm(false)">Отмена</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="() => Confirm(true)">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="@BackgroundClass"></div>
+}

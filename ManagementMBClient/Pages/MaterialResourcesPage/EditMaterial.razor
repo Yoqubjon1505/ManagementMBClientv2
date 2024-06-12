@@ -1,0 +1,59 @@
+﻿@page "/materialResources/edit/{Id}"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Edit MaterialResources</PageTitle>
+
+<h3>Edit MaterialResources</h3>
+@if (materialResources == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <form>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input id="name" class="form-control" @bind="@materialResources.Name" required />
+        </div>
+        <div class="form-group">
+            <label for="quantity">Transport:</label>
+            <input id="quantity" class="form-control" @bind="@materialResources.Transport" required />
+        </div>
+        <div class="form-group">
+            <label for="price">Equipment:</label>
+            <input id="price" class="form-control" @bind="@materialResources.Equipment" required />
+        </div>
+        <div class="form-group">
+            <label for="costPrice">Building:</label>
+            <input id="costPrice" class="form-control" @bind="@materialResources.Building" required />
+        </div>
+        <div class="form-group">
+            <label for="costPrice">Description:</label>
+            <input id="costPrice" class="form-control" @bind="@materialResources.Description" required />
+        </div>
+        <button type="button" class="btn btn-primary" @onclick="EditMaterialResources">Edit MaterialResources</button>
+    </form>
+
+}
+
+@code {
+    [Parameter]
+    
+    public string Id { get; set; }
+
+    MaterialResources materialResources;
+
+    protected override async Task OnInitializedAsync()
+    {
+        materialResources = await _http.GetFromJsonAsync<MaterialResources>($"api/MaterialResources/GetById?id={Id}");
+    }
+
+    private async Task EditMaterialResources()
+    {
+        var createProduct = await _http.PutAsJsonAsync<MaterialResources>($"api/MaterialResources/Update?id={Id}", materialResources);
+        _navigationManager.NavigateTo("/materialResources");
+    }
+}

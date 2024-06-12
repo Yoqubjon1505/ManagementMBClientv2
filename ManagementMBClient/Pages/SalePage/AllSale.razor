@@ -1,0 +1,331 @@
+﻿ @page "/sale"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager _navigationManager
+
+<PageTitle>Sale</PageTitle>
+
+<h1>Sale</h1>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <a href='/sale/add' class="btn btn-primary" role="button">
+            <i class="fas fa-user-plus"></i>
+            Add Sale
+        </a>
+    </div>
+    <div class="input-group col">
+        <input type="text" class="form-control" placeholder="Search product by Name or Description"
+               @bind="@SearchString" @bind:event="oninput" />
+    </div>
+    <div class="col-md-3">
+        <input type="date" class="form-control" @bind="@StartDate" @bind:event="onchange" />
+    </div>
+    <div class="col-md-3">
+        <input type="date" class="form-control" @bind="@EndDate" @bind:event="onchange" />
+    </div>
+</div>
+
+@if (_filteredSales == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>QuantitySold</th>
+                <th>Price</th>
+                <th>TotalPrice</th>
+                <th>Description</th>
+                <th>Product</th>
+                <th>SaleDate</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sale in _filteredSales)
+            {
+                <tr>
+                    <td>@sale.Product</td> 
+                    <td>@sale.Quantity</td>
+                    <td>@sale.Price</td>
+                    <td>@sale.TotalPrice</td>
+                    <td>@sale.Description</td>
+                    <td>@sale.Product</td>
+                    <td>@sale.SaleDate</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditItem(sale.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(sale.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5">Total</td>
+                <td>@_filteredSales.Sum(product => product.TotalPrice)</td>
+                <td>@_filteredSales.Sum(product => product.Quantity)</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+}
+
+@code {
+    protected string SearchString { get; set; } = string.Empty;
+    protected DateTime? StartDate { get; set; }
+    protected DateTime? EndDate { get; set; }
+    private List<Sale> _allSales;
+    private List<Sale> _filteredSales;
+    private bool ShowModal { get; set; }
+    private Guid SaleIdToDelete { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allSales = await _http.GetFromJsonAsync<List<Sale>>("api/Sales/GetAll");
+        _filteredSales = _allSales.ToList();
+    }
+
+    private void ShowDeleteConfirmation(Guid id)
+    {
+        SaleIdToDelete = id;
+        ShowModal = true;
+    }
+
+    private async Task HandleDeleteConfirmation(bool confirmed)
+    {
+        ShowModal = false;
+
+        if (confirmed)
+        {
+            await _http.DeleteAsync($"api/Sales?id={SaleIdToDelete}");
+            _allSales.RemoveAll(sale => sale.Id == SaleIdToDelete);
+            FilterSales();
+        }
+    }
+
+    private void EditItem(Guid id)
+    {
+        _navigationManager.NavigateTo($"/sale/edit/{id}", true);
+    }
+
+    protected void FilterSales()
+    {
+        _filteredSales = _allSales;
+
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            _filteredSales = _filteredSales.Where(x => x.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+                                            .ToList();
+        }
+
+        if (StartDate.HasValue)
+        {
+            _filteredSales = _filteredSales.Where(x => x.SaleDate >= StartDate.Value).ToList();
+        }
+
+        if (EndDate.HasValue)
+        {
+            _filteredSales = _filteredSales.Where(x => x.SaleDate <= EndDate.Value).ToList();
+        }
+    }
+}
+ 
+@* @page "/sales"
+@using ManagementMBClient.DTOs
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3 class="my-4">Sales Management</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary me-2" @onclick="LoadSales">Load Sales</button>
+    <button class="btn btn-success" @onclick="ShowCreateForm">Create New Sale</button>
+</div>
+
+@if (sales != null && sales.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sale in sales)
+                {
+                    <tr>
+                        <td>@sale.Name</td>
+                        <td>@sale.Quantity</td>
+                        <td>@sale.Price</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm me-2" @onclick="() => ShowUpdateForm(sale.Id)">Update</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteSale(sale.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>No sales available.</p>
+}
+
+@if (showCreateForm)
+{
+    <div class="card my-3">
+        <div class="card-body">
+            <h5 class="card-title">Create New Sale</h5>
+            <EditForm Model="@newSale" OnValidSubmit="CreateSale">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <label for="productSelect" class="form-label">Product</label>
+                    <InputSelect id="productSelect" class="form-select" @bind-Value="newSale.ProductId">
+                        <option value="">Select a product</option>
+                        @foreach (var product in products)
+                        {
+                            <option value="@product.Id">@product.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <InputNumber id="quantity" class="form-control" @bind-Value="newSale.Quantity" placeholder="Quantity" />
+                </div>
+                <div class="mb-3">
+                    <label for="price" class="form-label">Price</label>
+                    <InputNumber id="price" class="form-control" @bind-Value="newSale.Price" placeholder="Price" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="button" class="btn btn-secondary" @onclick="() => showCreateForm = false">Cancel</button>
+            </EditForm>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-3">@errorMessage</div>
+            }
+        </div>
+    </div>
+}
+
+@if (showUpdateForm)
+{
+    <div class="card my-3">
+        <div class="card-body">
+            <h5 class="card-title">Update Sale</h5>
+            <EditForm Model="@updateSale" OnValidSubmit="UpdateSale">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <InputText id="name" class="form-control" @bind-Value="updateSale.Name" placeholder="Name" />
+                </div>
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <InputNumber id="quantity" class="form-control" @bind-Value="updateSale.Quantity" placeholder="Quantity" />
+                </div>
+                <div class="mb-3">
+                    <label for="price" class="form-label">Price</label>
+                    <InputNumber id="price" class="form-control" @bind-Value="updateSale.Price" placeholder="Price" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="button" class="btn btn-secondary" @onclick="() => showUpdateForm = false">Cancel</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    private List<SaleProductDTO> sales;
+    private List<Product> products = new List<Product>();
+    private SaleProductDTO newSale = new SaleProductDTO();
+    private SaleProductDTO updateSale = new SaleProductDTO();
+    private bool showCreateForm = false;
+    private bool showUpdateForm = false;
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadSales()
+    {
+        sales = await Http.GetFromJsonAsync<List<SaleProductDTO>>("api/Sales/GetAll");
+    }
+
+    private async Task LoadProducts()
+    {
+        products = await Http.GetFromJsonAsync<List<Product>>("api/Products");
+    }
+
+    private void ShowCreateForm()
+    {
+        newSale = new SaleProductDTO();
+        showCreateForm = true;
+        errorMessage = null;
+    }
+
+    private async Task CreateSale()
+    {
+        errorMessage = null;
+
+        if (newSale.ProductId == Guid.Empty)
+        {
+            errorMessage = "Please select a product.";
+            return;
+        }
+
+        var product = await Http.GetFromJsonAsync<Product>($"api/Sales/GetProductById?productId={newSale.ProductId}");
+
+        if (product != null)
+        {
+            await Http.PostAsJsonAsync("api/Sales", newSale);
+            showCreateForm = false;
+            await LoadSales();
+        }
+        else
+        {
+            errorMessage = "Product not found!";
+        }
+    }
+
+    private void ShowUpdateForm(Guid id)
+    {
+        updateSale = sales.FirstOrDefault(s => s.Id == id);
+        showUpdateForm = true;
+        errorMessage = null;
+    }
+
+    private async Task UpdateSale()
+    {
+        await Http.PutAsJsonAsync($"api/Sales?id={updateSale.Id}", updateSale);
+        showUpdateForm = false;
+        await LoadSales();
+    }
+
+    private async Task DeleteSale(Guid id)
+    {
+        await Http.DeleteAsync($"api/Sales?id={id}");
+        await LoadSales();
+    }
+} *@
+
+
+

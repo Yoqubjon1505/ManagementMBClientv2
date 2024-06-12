@@ -1,0 +1,45 @@
+﻿@page "/debtor/add"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Add Debtors</PageTitle>
+
+ <form>
+    <div class="form-group">
+        <label for="name">Amount:</label>
+        <input id="name" class="form-control" @bind="@debtor.Amount" required />
+    </div>
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input id="name" class="form-control" @bind="@debtor.Name" required />
+    </div>
+    <div class="form-group">
+        <label for="email">Description:</label>
+        <input id="email" class="form-control" @bind="@debtor.Description" required />
+    </div>
+    
+   
+    <button type="button" class="btn btn-primary" @onclick="AddProduct">Add Product</button>
+    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+</form> 
+
+@code {
+    Debtor debtor = new Debtor();
+
+    private async Task AddProduct()
+    {
+        var createDebtors = await _http.PostAsJsonAsync<Debtor>("api/debtor", debtor);
+        if (createDebtors.IsSuccessStatusCode)
+        {
+            debtor = new Debtor();
+            _navigationManager.NavigateTo("/debtor");
+        }
+
+    }
+    private void CancelForm()
+    {
+        _navigationManager.NavigateTo("/debtor");
+    }
+}

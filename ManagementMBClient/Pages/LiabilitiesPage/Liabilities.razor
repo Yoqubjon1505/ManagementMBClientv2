@@ -1,0 +1,136 @@
+﻿@page "/liabilities"
+@inject LiabilitiesService LiabilitiesService
+@using ManagementMBClient.DTOs
+
+
+<PageTitle>Liabilities</PageTitle>
+
+<h3>Liabilities</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="ShowCreateForm">Add Liability</button>
+</div>
+
+@if (liabilities == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var liability in liabilities)
+            {
+                <tr>
+                    <td>@liability.Name</td>
+                    <td>@liability.Amount</td>
+                    <td>@liability.Date</td>
+                    <td>@liability.Category.ToString()</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => EditLiability(liability.Id)">Edit</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteLiability(liability.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showCreateForm || showEditForm)
+{
+    <EditForm Model="newLiability" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="newLiability.Name" />
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <InputSelect id="category" class="form-control" @bind-Value="newLiability.Category">
+                <option value="">Select Category</option>
+                @foreach (var category in Enum.GetValues<LiabilitiiesCategory>())
+                {
+                    <option value="@category">@category</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount</label>
+            <InputNumber id="amount" class="form-control" @bind-Value="newLiability.Amount" />
+        </div>
+        <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <InputDate id="date" class="form-control" @bind-Value="newLiability.Date" />
+        </div>
+
+       <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<LiabilitiiesDTO>? liabilities;
+    private LiabilitiiesDTO newLiability = new LiabilitiiesDTO();
+    private bool showCreateForm = false;
+    private bool showEditForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        liabilities = await LiabilitiesService.GetAllLiabilitiesAsync();
+    }
+
+    private void ShowCreateForm()
+    {
+        showCreateForm = true;
+        showEditForm = false;
+        newLiability = new LiabilitiiesDTO();
+    }
+
+    private void CancelForm()
+    {
+        showCreateForm = false;
+        showEditForm = false;
+        newLiability = new LiabilitiiesDTO();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (showEditForm)
+        {
+            await LiabilitiesService.UpdateLiabilityAsync(newLiability.Id, newLiability);
+        }
+        else
+        {
+            await LiabilitiesService.CreateLiabilityAsync(newLiability);
+        }
+        liabilities = await LiabilitiesService.GetAllLiabilitiesAsync();
+        showCreateForm = false;
+        showEditForm = false;
+        newLiability = new LiabilitiiesDTO();
+    }
+
+    private async Task EditLiability(Guid id)
+    {
+        var liability = await LiabilitiesService.GetLiabilityByIdAsync(id);
+        if (liability != null)
+        {
+            newLiability = liability;
+            showCreateForm = false;
+            showEditForm = true;
+        }
+    }
+
+    private async Task DeleteLiability(Guid id)
+    {
+        await LiabilitiesService.DeleteLiabilityAsync(id);
+        liabilities = await LiabilitiesService.GetAllLiabilitiesAsync();
+    }
+}

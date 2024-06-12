@@ -1,0 +1,63 @@
+﻿@page "/balance-by-date"
+@using ManagementMBClient.DTOs
+@inject BalanceService BalanceService
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h3 class="text-center">Get Balance by Date</h3>
+            <div class="mb-3">
+                <label for="dateInput" class="form-label">Select Date</label>
+                <input type="date" id="dateInput" class="form-control" @bind="selectedDate" />
+            </div>
+            <button class="btn btn-primary" @onclick="GetBalance">Get Balance</button>
+        </div>
+    </div>
+
+    @if (balance != null)
+    {
+        <div class="row mt-4">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Balance</h4>
+                        <p class="card-text"><strong>CurrentAssets:</strong> @balance.CurrentAssets</p>
+                        <p class="card-text"><strong>Availability:</strong> @balance.Availability</p>
+                        <p class="card-text"><strong>Debtors:</strong> @balance.Debtors</p>
+                        <p class="card-text"><strong>StockProducts:</strong> @balance.StockProducts</p>
+                        <p class="card-text"><strong>FixedAssets:</strong> @balance.FixedAssets</p>
+                        <p class="card-text"><strong>Transport:</strong> @balance.Transport</p>
+                        <p class="card-text"><strong>Equipment:</strong> @balance.Equipment</p>
+                        <p class="card-text"><strong>Building:</strong> @balance.Building</p>
+                        <p class="card-text"><strong>Liabilitiies:</strong> @balance.Liabilitiies</p>
+                        <p class="card-text"><strong>Capital:</strong> @balance.Capital</p>
+                      
+                        <p class="card-text"><strong>Date:</strong> @balance.Date.ToString("yyyy-MM-dd")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (balanceChecked)
+    {
+        <div class="row mt-4">
+            <div class="col-md-6 offset-md-3">
+                <div class="alert alert-warning" role="alert">
+                    Balance not found for the selected date.
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private DateTime selectedDate;
+    private BalanceDto balance;
+    private bool balanceChecked = false;
+
+    private async Task GetBalance()
+    {
+        balance = await BalanceService.GetBalanceByDateAsync(selectedDate);
+        balanceChecked = true;
+    }
+}

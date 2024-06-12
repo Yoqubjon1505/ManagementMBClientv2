@@ -1,0 +1,80 @@
+﻿@page "/cashflow"
+@inject CashFlowService CashFlowService
+
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+
+<PageTitle>CashFlow</PageTitle>
+
+<h3>CashFlow</h3>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <div class="mb-3">
+                <label for="fromDate" class="form-label">From Date</label>
+                <InputDate id="fromDate" class="form-control" @bind-Value="fromDate" />
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="mb-3">
+                <label for="toDate" class="form-label">To Date</label>
+                <InputDate id="toDate" class="form-control" @bind-Value="toDate" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <button class="btn btn-primary" @onclick="LoadCashFlows">Get Cash Flows</button>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            @if (cashFlows != null && cashFlows.Count > 0)
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Sale</th>
+                            <th>Purchase</th>
+                            <th>Gross Profit</th>
+                            <th>Expenses Amount</th>
+                            <th>Net Profit</th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cashFlow in cashFlows)
+                        {
+                            <tr>
+                                <td>@cashFlow.Date.ToShortDateString()</td>
+                                <td>@cashFlow.Sale</td>
+                                <td>@cashFlow.Purchase</td>
+                                <td>@cashFlow.GrossProfit</td>
+                                <td>@cashFlow.ExpensesAmount</td>
+                                <td>@cashFlow.NetProfit</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            }
+            else
+            {
+                <p>No cash flows found for the selected date range.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<CashFlowDTO> cashFlows;
+    private DateTime fromDate = DateTime.Today.AddMonths(-1);
+    private DateTime toDate = DateTime.Today;
+
+    private async Task LoadCashFlows()
+    {
+        cashFlows = await CashFlowService.GetCashFlowsByDateAsync(fromDate, toDate);
+    }
+}

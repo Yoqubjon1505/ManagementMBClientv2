@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazorise" Version="1.5.2" />
+    <PackageReference Include="BlazorJS" Version="2.1.5" />
+    <PackageReference Include="BlazorJSInterop.SourceGenerator" Version="6.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.4" PrivateAssets="all" />
+    <PackageReference Include="MudBlazor" Version="6.19.1" />
+    <PackageReference Include="MudBlazor.ThemeManager" Version="1.0.9" />
+    <PackageReference Include="Syncfusion.Blazor.Core" Version="25.2.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authentication\" />
+    <Folder Include="Pages\UserPage\" />
+    <Folder Include="Pages\UserPage\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\DebtorsPage\Add.razor" />
+    <None Include="Pages\DebtorsPage\AllDebtor.razor" />
+    <None Include="Pages\DebtorsPage\Edit.razor" />
+    <None Include="Pages\MaterialResourcesPage\AddMaterial.razor" />
+    <None Include="Pages\MaterialResourcesPage\AllMaterial.razor" />
+    <None Include="Pages\MaterialResourcesPage\EditMaterial.razor" />
+    <None Include="Pages\SalePage\AddSale.razor" />
+    <None Include="Pages\SalePage\AllSale.razor" />
+    <None Include="Pages\SalePage\EditSale.razor" />
+  </ItemGroup>
+
+</Project>

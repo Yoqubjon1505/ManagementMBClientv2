@@ -1,0 +1,116 @@
+﻿@page "/materialResources"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Material Resources</PageTitle>
+
+<h1>Material Resources</h1>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <a href="/materialResources/add" class="btn btn-primary" role="button">
+            <i class="fas fa-user-plus"></i>
+            Add Material Resource
+        </a>
+    </div>
+    <div class="input-group col-md-6">
+        <input type="text" class="form-control" placeholder="Search by Name or Description"
+               @bind="SearchString" @bind:event="oninput" @onkeyup="FilterClients" />
+    </div>
+</div>
+
+@if (_allMaterialResources == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Transport</th>
+                <th>Equipment</th>
+                <th>Building</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var materialResource in _filteredMaterialResources)
+            {
+                <tr>
+                    <td>@materialResource.Name</td>
+                    <td>@materialResource.Transport</td>
+                    <td>@materialResource.Equipment</td>
+                    <td>@materialResource.Building</td>
+                    <td>@materialResource.Description</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditItem(materialResource.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(materialResource.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5">Total</td>
+                <td>@_filteredMaterialResources.Sum(mr => mr.Building + mr.Equipment + mr.Transport)</td>
+            </tr>
+        </tfoot>
+    </table>
+}
+
+<DeleteConfirmation IsVisible="ShowModal" OnConfirm="HandleDeleteConfirmation" />
+
+@code {
+    protected string SearchString { get; set; } = string.Empty;
+    private IEnumerable<MaterialResources>? _allMaterialResources;
+    private IEnumerable<MaterialResources>? _filteredMaterialResources;
+    private bool ShowModal { get; set; }
+    private Guid MaterialResourceIdToDelete { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allMaterialResources = await _http.GetFromJsonAsync<IEnumerable<MaterialResources>>("api/MaterialResources");
+        _filteredMaterialResources = _allMaterialResources;
+    }
+
+    private void ShowDeleteConfirmation(Guid id)
+    {
+        MaterialResourceIdToDelete = id;
+        ShowModal = true;
+    }
+
+    private async Task HandleDeleteConfirmation(bool confirmed)
+    {
+        ShowModal = false;
+
+        if (confirmed)
+        {
+             await _http.DeleteAsync($"api/MaterialResources/Delete?id={MaterialResourceIdToDelete}");
+            await OnInitializedAsync(); // Refresh the list
+        }
+    }
+
+    private void EditItem(Guid id)
+    {
+        _navigationManager.NavigateTo($"/materialResources/edit/{id}", true);
+    }
+
+    protected void FilterClients()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            _filteredMaterialResources = _allMaterialResources.Where(x => x.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+                                                                        || x.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+                                                             .ToArray();
+        }
+        else
+        {
+            _filteredMaterialResources = _allMaterialResources;
+        }
+    }
+}

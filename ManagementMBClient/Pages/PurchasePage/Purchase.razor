@@ -1,0 +1,162 @@
+﻿@page "/purchase"
+@inject PurchaseService PurchaseService
+
+@using ManagementMBClient.DTOs
+
+<PageTitle>Purchase</PageTitle>
+
+<h3>Purchase</h3>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <button class="btn btn-primary" @onclick="ShowCreateForm">Create Purchase</button>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Quantity</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>TotalPrice</th>
+                        <th>CostPrice</th>
+                        <th>TotalPrice</th>
+                        <th>Description</th>
+                         <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var purchase in purchases)
+                    {
+                        <tr>
+                            <td>@purchase.Quantity</td>
+                            <td>@purchase.Name</td>
+                            <td>@purchase.Price</td>
+                            <td>@purchase.TotalPrice</td>
+                            <td>@purchase.CostPrice</td>
+                            <td>@purchase.TotalCostPrice</td>
+                            <td>@purchase.Description</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" @onclick="() => EditPurchase(purchase.Id)">Edit</button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeletePurchase(purchase.Id)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (showForm)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <EditForm Model="currentPurchase" OnValidSubmit="SavePurchase">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <InputNumber id="quantity" class="form-control" @bind-Value="currentPurchase.Quantity" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <InputText id="name" class="form-control" @bind-Value="currentPurchase.Name" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <InputNumber id="price" class="form-control" @bind-Value="currentPurchase.Price" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="costPrice" class="form-label">Cost Price</label>
+                        <InputNumber id="costPrice" class="form-control" @bind-Value="currentPurchase.CostPrice" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Description</label>
+                        <InputText id="name" class="form-control" @bind-Value="currentPurchase.Description" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="availability" class="form-label">Availability</label>
+                        <InputCheckbox id="availability" class="form-check-input" @bind-Value="currentPurchase.Availability" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+                </EditForm>
+            </div>
+        </div>
+
+    }
+</div>
+
+@code {
+    private List<Product> purchases = new();
+    private Product currentPurchase = new();
+    private bool showForm = false;
+    private bool isEditing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPurchases();
+    }
+
+    private async Task LoadPurchases()
+    {
+        purchases = await PurchaseService.GetAllPurchasesAsync();
+    }
+
+    private void ShowCreateForm()
+    {
+        currentPurchase = new Product();
+        showForm = true;
+        isEditing = false;
+    }
+
+    private async Task SavePurchase()
+    {
+        if (isEditing)
+        {
+            await PurchaseService.UpdatePurchaseAsync(currentPurchase.Id, currentPurchase);
+        }
+        else
+        {
+            await PurchaseService.CreatePurchaseAsync(Guid.NewGuid(), currentPurchase);
+        }
+
+        showForm = false;
+        await LoadPurchases();
+    }
+
+    private async Task EditPurchase(Guid id)
+    {
+        currentPurchase = await PurchaseService.GetPurchaseByIdAsync(id);
+        showForm = true;
+        isEditing = true;
+    }
+
+    // private async Task DeletePurchase(Guid id)
+    // {
+    //     await PurchaseService.DeletePurchaseAsync(id);
+    //     await LoadPurchases();
+    // }
+    private async Task DeletePurchase(Guid id)
+    {
+        var response = await PurchaseService.DeletePurchaseAsync(id);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadPurchases();
+        }
+        else
+        {
+            // Handle error response
+        }
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+    }
+}

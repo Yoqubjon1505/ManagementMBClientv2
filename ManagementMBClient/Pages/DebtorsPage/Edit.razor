@@ -1,0 +1,56 @@
+﻿@page "/debtor/edit/{Id}"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Edit Debtor</PageTitle>
+
+<h3>Edit Debtor</h3>
+@if (debtor == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <form>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input id="name" class="form-control" @bind="@debtor.Name" required />
+        </div>
+        <div class="form-group">
+            <label for="quantity">Description:</label>
+            <input id="quantity" class="form-control" @bind="@debtor.Description" required />
+        </div>
+        <div class="form-group">
+            <label for="price">Amount:</label>
+            <input id="price" class="form-control" @bind="@debtor.Amount" required />
+        </div>
+        <button type="button" class="btn btn-primary" @onclick="EditDebtor"> Edit Debtor</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+    </form>
+
+}
+
+@code {
+    [Parameter]
+    
+    public string Id { get; set; }
+
+    Debtor debtor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        debtor = await _http.GetFromJsonAsync<Debtor>($"api/Debtor/GetById?id={Id}");
+    }
+
+    private async Task EditDebtor()
+    {
+        var createProduct = await _http.PutAsJsonAsync<Debtor>($"api/Debtor/Update?id={Id}", debtor);
+        _navigationManager.NavigateTo("/debtor");
+    }
+    private void CancelForm()
+    {
+        _navigationManager.NavigateTo("/debtor");
+    }
+}

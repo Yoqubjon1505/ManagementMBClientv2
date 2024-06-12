@@ -1,0 +1,186 @@
+﻿@page "/expenses"
+@inject ExpensesService ExpensesService
+@using ManagementMBClient.DTOs
+
+
+<PageTitle>Expenses</PageTitle>
+
+<h3>Expenses</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="ShowCreateForm">Add Expense</button>
+    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+</div>
+
+<div class="row mb-3">
+    <div class="col">
+        <label for="searchDate" class="form-label">Search by Date</label>
+        <InputDate id="searchDate" class="form-control" @bind-Value="searchDate" />
+        <button class="btn btn-secondary mt-2" @onclick="SearchByDate">Search</button>
+    </div>
+    <div class="col">
+        <label for="searchCategory" class="form-label">Search by Category</label>
+        <InputSelect id="searchCategory" class="form-control" @bind-Value="searchCategory">
+            <option value="">Select Category</option>
+            @foreach (var category in Enum.GetValues<ExpenseCategory>())
+            {
+                <option value="@category">@category</option>
+            }
+        </InputSelect>
+        <button class="btn btn-secondary mt-2" @onclick="SearchByCategory">Search</button>
+    </div>
+</div>
+
+@if (expenses == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var expense in expenses)
+            {
+                <tr>
+                    <td>@expense.Description</td>
+                    <td>@expense.Amount</td>
+                    <td>@expense.Category</td>
+                    <td>@expense.Date</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => EditExpense(expense.Id)">Edit</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteExpense(expense.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showCreateForm || showEditForm)
+{
+    <EditForm Model="newExpense" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <InputText id="description" class="form-control" @bind-Value="newExpense.Description" />
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount</label>
+            <InputNumber id="amount" class="form-control" @bind-Value="newExpense.Amount" />
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <InputSelect id="category" class="form-control" @bind-Value="newExpense.Category">
+                <option value="">Select Category</option>
+                @foreach (var category in Enum.GetValues<ExpenseCategory>())
+                {
+                    <option value="@category">@category</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <InputDate id="date" class="form-control" @bind-Value="newExpense.Date" />
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+    </EditForm>
+    
+}
+
+@code {
+    private List<Expenses> expenses;
+    private Expenses newExpense = new Expenses();
+    private DateTime? searchDate;
+    private ExpenseCategory? searchCategory;
+    private bool showCreateForm = false;
+    private bool showEditForm = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        expenses = await ExpensesService.GetAllExpensesAsync();
+    }
+
+    private void ShowCreateForm()
+    {
+
+        showCreateForm = true;
+        showEditForm = false;
+        newExpense = new Expenses();
+    }
+
+    private async Task CancelForm()
+    {
+        searchDate = null;
+        searchCategory = null;
+        showCreateForm = false;
+        showEditForm = false;
+        newExpense = new Expenses();
+        expenses = await ExpensesService.GetAllExpensesAsync();
+       
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (showEditForm)
+        {
+            await ExpensesService.UpdateExpenseAsync(newExpense.Id, newExpense);
+        }
+        else
+        {
+            await ExpensesService.CreateExpenseAsync(newExpense);
+        }
+        expenses = await ExpensesService.GetAllExpensesAsync();
+        showCreateForm = false;
+        showEditForm = false;
+        newExpense = new Expenses();
+    }
+
+    private async Task EditExpense(Guid id)
+    {
+        var expense = await ExpensesService.GetExpenseByIdAsync(id);
+        if (expense != null)
+        {
+            newExpense = expense;
+            showCreateForm = false;
+            showEditForm = true;
+        }
+    }
+
+    private async Task DeleteExpense(Guid id)
+    {
+
+        await ExpensesService.DeleteExpenseAsync(id);
+
+        expenses = await ExpensesService.GetAllExpensesAsync();
+
+    }
+
+
+    private async Task SearchByDate()
+    {
+        if (searchDate.HasValue)
+        {
+            expenses = await ExpensesService.GetExpensesByDateAsync(searchDate.Value);
+        }
+    }
+
+    private async Task SearchByCategory()
+    {
+        if (searchCategory.HasValue)
+        {
+            expenses = await ExpensesService.GetExpensesByCategoryAsync(searchCategory.Value);
+        }
+    }
+   
+}

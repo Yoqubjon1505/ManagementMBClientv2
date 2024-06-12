@@ -1,0 +1,116 @@
+﻿@page "/debtor"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Debtors</PageTitle>
+
+<h1>Debtors</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <a href='/debtor/add' class="btn btn-primary" role="button">
+            <i class="fas fa-user-plus"></i>
+            Add Debtor
+        </a>
+          
+    </div>
+    <div class="input-group col">
+        <input type="text" class="form-control" placeholder="Search debtor by Name or Description"
+               @bind="SearchString" @bind:event="oninput" @onkeyup="FilterDebtors" />
+    </div>
+</div>
+@if (_allDebtors == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var debtor in _filteredDebtors)
+            {
+                <tr>
+                    <td>@debtor.Name</td>
+                    <td>@debtor.Description</td>
+                    <td>@debtor.Amount</td>
+
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditItem(debtor.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(debtor.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3">Total</td>
+                <td>@_filteredDebtors.Sum(debtor => debtor.Amount)</td>
+            </tr>
+        </tfoot>
+    </table>
+}
+
+<DeleteConfirmation IsVisible="ShowModal" OnConfirm="HandleDeleteConfirmation" />
+
+@code {
+    protected string SearchString { get; set; } = string.Empty;
+    private IEnumerable<Debtor>? _allDebtors;
+    private IEnumerable<Debtor>? _filteredDebtors;
+    private bool ShowModal { get; set; }
+    private Guid DebtorIdToDelete { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allDebtors = await _http.GetFromJsonAsync<IEnumerable<Debtor>>("api/Debtor");
+        _filteredDebtors = _allDebtors;
+    }
+   
+
+    private void ShowDeleteConfirmation(Guid id)
+    {
+        DebtorIdToDelete = id;
+        ShowModal = true;
+    }
+
+    private async Task HandleDeleteConfirmation(bool confirmed)
+    {
+        ShowModal = false;
+
+        if (confirmed)
+        {
+            await _http.DeleteAsync($"api/Debtor/Delete?id={DebtorIdToDelete}");
+            // _allDebtors = await _http.GetFromJsonAsync<IEnumerable<Debtor>>("api/Debtor");
+            // _filteredDebtors = _allDebtors;
+            await OnInitializedAsync();
+        }
+    }
+
+    private void EditItem(Guid id)
+    {
+        _navigationManager.NavigateTo($"/debtor/edit/{id}", true);
+    }
+
+    protected void FilterDebtors()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            _filteredDebtors = _allDebtors.Where(x => x.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+                                                       || x.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
+        else
+        {
+            _filteredDebtors = _allDebtors;
+        }
+    }
+}

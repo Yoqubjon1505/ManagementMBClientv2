@@ -1,0 +1,7 @@
+﻿.modal-header.bg-danger {
+    background-color: #0026ff;
+}
+
+.modal-header .close {
+    color: #4800ff;
+}

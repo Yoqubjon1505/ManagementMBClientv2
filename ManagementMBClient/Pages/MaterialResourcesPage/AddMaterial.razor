@@ -1,0 +1,53 @@
+﻿@page "/materialResources/add"
+@inject HttpClient _http
+@using ManagementMBClient.DTOs
+@using System.Net.Http.Json
+@inject NavigationManager _navigationManager
+
+<PageTitle>Add MaterialResources</PageTitle>
+
+ <form>
+    <div class="form-group">
+        <label for="name">Transport:</label>
+        <input id="name" class="form-control" @bind="@materialResources.Transport" required />
+    </div>
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input id="name" class="form-control" @bind="@materialResources.Name" required />
+    </div>
+    
+    <div class="form-group">
+        <label for="email">Equipment:</label>
+        <input id="email" class="form-control" @bind="@materialResources.Equipment" required />
+    </div>
+    <div class="form-group">
+        <label for="email">Building:</label>
+        <input id="email" class="form-control" @bind="@materialResources.Building" required />
+    </div>
+    <div class="form-group">
+        <label for="email">Description:</label>
+        <input id="email" class="form-control" @bind="@materialResources.Description" required />
+    </div>
+   
+    <button type="button" class="btn btn-primary" @onclick="AddMaterialResources">Add MaterialResources</button>
+    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+</form> 
+
+@code {
+    MaterialResources materialResources = new MaterialResources();
+
+    private async Task AddMaterialResources()
+    {
+        var createMaterialResources = await _http.PostAsJsonAsync<MaterialResources>("api/MaterialResources", materialResources);
+        if (createMaterialResources.IsSuccessStatusCode)
+        {
+            materialResources = new MaterialResources();
+            _navigationManager.NavigateTo("/materialResources");
+        }
+
+    }
+    private async Task CancelForm()
+    {
+    _navigationManager.NavigateTo("/materialResources");
+    }
+}
