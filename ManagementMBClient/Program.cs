@@ -1,6 +1,7 @@
 
 using Blazorise;
 using ManagementMBClient.Pages.ExpensesPage;
+using ManagementMBClient.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;

@@ -1,26 +1,46 @@
-﻿// Services/CashFlowService.cs
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
-public class CashFlowService
+namespace ManagementMBClient.Services
 {
-    private readonly HttpClient _httpClient;
-
-    public CashFlowService(HttpClient httpClient)
+    public class CashFlowService
     {
-        _httpClient = httpClient;
-    }
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<CashFlowService> _logger;
 
-    public async Task<List<CashFlowDTO>> GetCashFlowsByDateAsync(DateTime fromDate, DateTime toDate)
-    {
-        var response = await _httpClient.PostAsJsonAsync("api/CashFlow/GetByData", new { fromDate, toDate });
-        if (response.IsSuccessStatusCode)
+        public CashFlowService(HttpClient httpClient, ILogger<CashFlowService> logger)
         {
-            return await response.Content.ReadFromJsonAsync<List<CashFlowDTO>>();
+            _httpClient = httpClient;
+            _logger = logger;
         }
-        return null;
+
+        public async Task<CashFlowDto> GetCashFlowByDateAsync(DateTime fromDate, DateTime toDate)
+        {
+            try
+            {
+                var url = $"api/CashFlow/GetByDate?fromDate={fromDate:O}&toDate={toDate:O}";
+                _logger.LogInformation($"Request URL: {url}");
+                var response = await _httpClient.PostAsync(url, null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CashFlowDto>();
+                    _logger.LogInformation($"Response Data: {result}");
+                    return result;
+                }
+                else
+                {
+                    _logger.LogWarning($"Request failed with status code: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while getting cash flow data.");
+            }
+
+            return null;
+        }
     }
 }

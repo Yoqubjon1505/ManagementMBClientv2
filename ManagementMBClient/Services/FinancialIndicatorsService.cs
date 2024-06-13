@@ -20,10 +20,15 @@ public class FinancialIndicatorsService
     //    return await response.Content.ReadFromJsonAsync<List<FinancialIndicatorDTO>>();
     //}
 
-    public async Task<List<FinancialIndicatorDTO>> GetByDateAsync(DateTime fromDate, DateTime toDate)
+    public async Task<FinancialIndicatorDTO> GetByDateAsync(DateTime fromDate, DateTime toDate)
     {
-        var response = await _httpClient.PostAsJsonAsync($"/api/FinancialIndicators?fromDate={fromDate}&toDate{toDate}", new { });
-        return await response.Content.ReadFromJsonAsync<List<FinancialIndicatorDTO>>();
+        var response = await _httpClient.PostAsJsonAsync($"/api/FinancialIndicators",fromDate);
+        if (response.IsSuccessStatusCode)
+        {
+        return await response.Content.ReadFromJsonAsync<FinancialIndicatorDTO>();
+
+        }
+      return  null;
     }
 
     public async Task<bool> DeleteFinancialIndicatorAsync(Guid id)

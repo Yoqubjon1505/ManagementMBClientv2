@@ -1,39 +1,29 @@
 ﻿@page "/cashflow"
-@inject CashFlowService CashFlowService
 
 @using ManagementMBClient.DTOs
-@using System.Net.Http.Json
+@using ManagementMBClient.Services
+@inject CashFlowService CashFlowService
 
-<PageTitle>CashFlow</PageTitle>
-
-<h3>CashFlow</h3>
-
-<div class="container">
+<div class="container mt-4">
     <div class="row">
-        <div class="col-6">
+        <div class="col-md-6 offset-md-3">
+            <h3 class="text-center">Get Cash Flow by Date Range</h3>
             <div class="mb-3">
-                <label for="fromDate" class="form-label">From Date</label>
-                <InputDate id="fromDate" class="form-control" @bind-Value="fromDate" />
+                <label for="fromDateInput" class="form-label">From Date</label>
+                <input type="date" id="fromDateInput" class="form-control" @bind="fromDate" />
             </div>
-        </div>
-        <div class="col-6">
             <div class="mb-3">
-                <label for="toDate" class="form-label">To Date</label>
-                <InputDate id="toDate" class="form-control" @bind-Value="toDate" />
+                <label for="toDateInput" class="form-label">To Date</label>
+                <input type="date" id="toDateInput" class="form-control" @bind="toDate" />
             </div>
+            <button class="btn btn-primary" @onclick="GetCashFlow">Get Cash Flow</button>
         </div>
     </div>
-    <div class="row">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="LoadCashFlows">Get Cash Flows</button>
-        </div>
     </div>
-
-    <div class="row mt-3">
-        <div class="col-12">
-            @if (cashFlows != null && cashFlows.Count > 0)
-            {
-                <table class="table table-striped">
+    
+          @*   @if (cashFlows != null )
+            { *@
+                @* <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -57,24 +47,59 @@
                             </tr>
                         }
                     </tbody>
-                </table>
+                </table> *@
+        @if (cashFlow != null)
+        {
+            <div class="row mt-4">
+                <div class="col-md-6 offset-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Cash Flow</h4>
+                                <h4 class="card-title">Balance</h4>
+                                <p class="card-text"><strong>CurrentAssets:</strong> @cashFlow.Sale</p>
+                                <p class="card-text"><strong>Availability:</strong> @cashFlow.Purchase</p>
+                                <p class="card-text"><strong>Debtors:</strong> @cashFlow.GrossProfit</p>
+                                <p class="card-text"><strong>StockProducts:</strong> @cashFlow.ExpensesAmount</p>
+                                <p class="card-text"><strong>FixedAssets:</strong> @cashFlow.NetProfit</p>
+                                <p class="card-text"><strong>Transport:</strong> @cashFlow.Date</p>
 
-            }
-            else
-            {
-                <p>No cash flows found for the selected date range.</p>
-            }
+
+                        <p class="card-text"><strong>From Date:</strong> @fromDate</p>
+                        <p class="card-text"><strong>To Date:</strong> @toDate</p>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
-@code {
-    private List<CashFlowDTO> cashFlows;
-    private DateTime fromDate = DateTime.Today.AddMonths(-1);
-    private DateTime toDate = DateTime.Today;
-
-    private async Task LoadCashFlows()
-    {
-        cashFlows = await CashFlowService.GetCashFlowsByDateAsync(fromDate, toDate);
     }
-}
+    else if (cashFlowChecked)
+    {
+        <div class="row mt-4">
+            <div class="col-md-6 offset-md-3">
+                <div class="alert alert-warning" role="alert">
+                    Cash flow not found for the selected date range.
+                </div>
+            </div>
+        </div>
+    }
+ 
+
+    @code {
+        private DateTime fromDate;
+        private DateTime toDate;
+        private CashFlowDto cashFlow;
+        private bool cashFlowChecked = false;
+
+        private async Task GetCashFlow()
+        {
+            try
+            {
+                cashFlow = await CashFlowService.GetCashFlowByDateAsync(fromDate, toDate);
+                cashFlowChecked = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+        }
+    }
+    

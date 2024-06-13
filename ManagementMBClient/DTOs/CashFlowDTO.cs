@@ -1,5 +1,5 @@
 ﻿// DTOs/CashFlowDTO.cs
-public class CashFlowDTO
+public class CashFlowDto
 {
     public DateTime Date { get; set; }
     public double Sale { get; set; }

@@ -39,7 +39,7 @@
                     <thead class="thead-dark">
                         <tr>
                             <th>
-                                <input type="checkbox" @onclick="ToggleSelectAll" />
+                                
                             </th>
                             <th>Leverage</th>
                             <th>Rotation</th>
@@ -53,25 +53,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var indicator in financialIndicators)
-                        {
+                        
                             <tr>
                                 <td>
-                                    <input type="checkbox" @checked="selectedIndicators.Contains(indicator.Id)" @onclick="() => ToggleSelection(indicator.Id)" />
+                                <input type="checkbox" @checked="selectedIndicators.Contains(indicator.Id)" @onclick="() => ToggleSelection(financialIndicators.Id)" />
                                 </td>
-                                <td>@indicator.Leverage</td>
-                                <td>@indicator.Rotation</td>
-                                <td>@indicator.InventoryTurnover</td>
-                                <td>@indicator.Liquidity</td>
-                                <td>@indicator.Profitability</td>
-                                <td>@indicator.GrossProfit</td>
-                                <td>@indicator.TotalExpenses</td>
-                                <td>@indicator.NetProfit</td>
+                            <td>@financialIndicators.Leverage</td>
+                            <td>@financialIndicators.Rotation</td>
+                            <td>@financialIndicators.InventoryTurnover</td>
+                            <td>@financialIndicators.Liquidity</td>
+                            <td>@financialIndicators.Profitability</td>
+                            <td>@financialIndicators.GrossProfit</td>
+                            <td>@financialIndicators.TotalExpenses</td>
+                            <td>@financialIndicators.NetProfit</td>
                                 <td>
-                                    <button class="btn btn-danger btn-sm" @onclick="() => DeleteFinancialIndicator(indicator.Id)">Delete</button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteFinancialIndicator(financialIndicators.Id)">Delete</button>
                                 </td>
                             </tr>
-                        }
+                        
                     </tbody>
                 </table>
             </div>
@@ -80,15 +79,12 @@
 </div>
 
 @code {
-    private List<FinancialIndicatorDTO> financialIndicators;
+    private FinancialIndicatorDTO financialIndicators;
     private HashSet<Guid> selectedIndicators = new HashSet<Guid>();
     private DateTime fromDate;
     private DateTime toDate;
 
-    protected override async Task OnInitializedAsync()
-    {
-        financialIndicators = new List<FinancialIndicatorDTO>();
-    }
+   
 
     private async Task GetFinancialIndicators()
     {
@@ -115,15 +111,5 @@
         }
     }
 
-    private void ToggleSelectAll()
-    {
-        if (selectedIndicators.Count == financialIndicators.Count)
-        {
-            selectedIndicators.Clear();
-        }
-        else
-        {
-            selectedIndicators = new HashSet<Guid>(financialIndicators.Select(i => i.Id));
-        }
-    }
+  
 }
